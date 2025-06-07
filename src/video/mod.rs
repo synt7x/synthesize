@@ -19,7 +19,7 @@ pub mod prelude {
     pub use crate::video::{
         app::App,
         render::Renderer,
-        ui::element::Element,
+        ui::{element::*, root::*},
     };
 
     pub type RenderReference = Rc<RefCell<Renderer>>;

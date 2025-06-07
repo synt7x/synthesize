@@ -23,7 +23,9 @@ impl Root {
     }
 
     pub fn get<T: 'static>(&mut self, idx: usize) -> Option<&mut T> {
-        None
+        return self.children
+            .get_mut(idx)?.as_mut()
+            .dynamic().downcast_mut::<T>();
     }
 }
 
@@ -48,7 +50,11 @@ impl Element for Root {
         }
 
         match event {
-            Event::Window { win_event, .. } => {},
+            Event::Window { win_event, .. } => {
+                if let WindowEvent::Resized(width,  height) = *win_event {
+                    self.size(width as u32, height as u32);
+                }
+            },
             _ => {}
         }
     }

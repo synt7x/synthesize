@@ -23,7 +23,8 @@ fn main() {
     let creator = canvas.texture_creator();
 
     // Holds rendering and updating logic for the UI
-    let mut app = App::new(creator);
+    let size: (u32, u32) = canvas.output_size().unwrap();
+    let mut app = App::new(creator, size.0, size.1);
 
     // Render loop
     loop {
