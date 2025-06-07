@@ -9,7 +9,7 @@ pub mod prelude {
     pub use sdl3::{
         event::Event,
         pixels::{Color, PixelFormat},
-        rect::Rect,
+        rect::{Point, Rect},
         render::{BlendMode, Canvas, Texture, TextureCreator},
         sys::pixels::SDL_PixelFormat,
         video::{Window, WindowContext},
