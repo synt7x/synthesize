@@ -15,8 +15,11 @@ pub mod prelude {
         video::{Window, WindowContext},
     };
 
-    pub use crate::video::app::App;
-    pub use crate::video::render::Renderer;
+    pub use crate::video::{
+        app::App,
+        render::Renderer,
+        ui::element::Element,
+    };
 
     pub type RenderReference = Rc<RefCell<Renderer>>;
     pub type TextureTarget = TextureCreator<WindowContext>;
@@ -24,6 +27,7 @@ pub mod prelude {
     pub type ID = u32;
     pub type Textures = HashMap<ID, RenderTexture>;
     pub type WindowCanvas = Canvas<Window>;
+    pub type Elements = Vec<Box<dyn Element>>;
 
     pub type GlyphMap = [u16; 10];
 }
