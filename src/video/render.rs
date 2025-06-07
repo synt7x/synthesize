@@ -1,4 +1,4 @@
-use std::{collections::HashMap, mem::transmute};
+use std::{cell::RefCell, collections::HashMap, mem::transmute, rc::Rc};
 
 use sdl3::{
     pixels::PixelFormat,
@@ -8,6 +8,7 @@ use sdl3::{
     video::WindowContext,
 };
 
+pub type RenderReference = Rc<RefCell<Renderer>>;
 pub type TextureTarget = TextureCreator<WindowContext>;
 pub type RenderTexture = Texture<'static>;
 pub type ID = u32;
@@ -21,13 +22,13 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn new(creator: TextureTarget) -> Self {
-        return Self {
+    pub fn new(creator: TextureTarget) -> RenderReference {
+        return Rc::new(RefCell::new(Self {
             creator,
 
             textures: HashMap::new(),
             id: 0,
-        };
+        }));
     }
 
     pub fn texture(&mut self, width: u32, height: u32) -> ID {

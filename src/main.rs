@@ -22,8 +22,10 @@ fn main() {
     let mut canvas = window.into_canvas();
     let mut pump = context.event_pump().unwrap();
 
+    let creator = canvas.texture_creator();
+
     // Holds rendering and updating logic for the UI
-    let mut app = App::new();
+    let mut app = App::new(creator);
 
     // Render loop
     loop {
