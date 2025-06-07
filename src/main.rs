@@ -1,6 +1,4 @@
-use sdl3::{event::Event, pixels::Color};
-
-use crate::video::app::App;
+use crate::video::prelude::*;
 
 mod video;
 mod audio;

@@ -1,4 +1,4 @@
-pub type GlyphMap = [u16; 10];
+use crate::video::prelude::*;
 
 pub static FONT: [GlyphMap; 26 * 2 + 1] = [
     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],

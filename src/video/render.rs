@@ -1,18 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, mem::transmute, rc::Rc};
-
-use sdl3::{
-    pixels::PixelFormat,
-    rect::Rect,
-    render::{BlendMode, Texture, TextureCreator},
-    sys::pixels::SDL_PixelFormat,
-    video::WindowContext,
-};
-
-pub type RenderReference = Rc<RefCell<Renderer>>;
-pub type TextureTarget = TextureCreator<WindowContext>;
-pub type RenderTexture = Texture<'static>;
-pub type ID = u32;
-pub type Textures = HashMap<ID, RenderTexture>;
+use crate::video::prelude::*;
 
 pub struct Renderer {
     creator: TextureTarget,

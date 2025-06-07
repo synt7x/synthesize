@@ -1,8 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
-
-use sdl3::{event::Event, render::Canvas, video::Window};
-
-use crate::video::render::{RenderReference, Renderer, TextureTarget};
+use crate::video::prelude::*;
 
 pub struct App {
     renderer: RenderReference
@@ -21,7 +17,7 @@ impl App {
     
     }
 
-    pub fn render(&self, canvas: &mut Canvas<Window>) {
+    pub fn render(&self, canvas: &mut WindowCanvas) {
     
     }
 }
