@@ -19,7 +19,7 @@ pub mod prelude {
     pub use crate::video::{
         app::App,
         render::Renderer,
-        ui::{element::*, root::*},
+        ui::{element::*, root::*, visualizer::*},
     };
 
     pub type RenderReference = Rc<RefCell<Renderer>>;
@@ -32,4 +32,15 @@ pub mod prelude {
     pub type Dynamic = dyn Any;
 
     pub type GlyphMap = [u16; 10];
+
+    macro_rules! insert {
+        ($parent: expr, $instance: expr) => {
+            {
+                let _idx = $parent.add(Box::new($instance));
+                $parent.get(_idx).unwrap()
+            }
+        }
+    }
+
+    pub(crate) use insert;
 }
