@@ -4,10 +4,11 @@ pub mod render;
 pub mod ui;
 
 pub mod prelude {
+    use std::any::Any;
     pub use std::{cell::RefCell, collections::HashMap, mem::transmute, rc::Rc};
 
     pub use sdl3::{
-        event::Event,
+        event::{Event, WindowEvent},
         pixels::{Color, PixelFormat},
         rect::{Point, Rect},
         render::{BlendMode, Canvas, Texture, TextureCreator},
@@ -28,6 +29,7 @@ pub mod prelude {
     pub type Textures = HashMap<ID, RenderTexture>;
     pub type WindowCanvas = Canvas<Window>;
     pub type Elements = Vec<Box<dyn Element>>;
+    pub type Dynamic = dyn Any;
 
     pub type GlyphMap = [u16; 10];
 }

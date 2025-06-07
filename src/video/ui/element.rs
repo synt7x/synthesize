@@ -15,5 +15,5 @@ pub trait Element: Any {
     }
 
     fn color(&mut self, color: Color) {}
-    fn dynamic(&mut self) -> &mut dyn Any;
+    fn dynamic(&mut self) -> &mut Dynamic;
 }
