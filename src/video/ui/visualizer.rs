@@ -1,21 +1,32 @@
+use std::collections::VecDeque;
+
 use crate::audio::prelude::*;
 use crate::video::prelude::*;
 
 pub struct Visualizer {
     pub rect: Rect,
-    pub stream: Stream,
+    pub stream: VecDeque<f32>,
+    pub zoom: usize,
 }
 
 impl Visualizer {
     pub fn new() -> Self {
+        let zoom = 2000;
         return Self {
             rect: Rect::new(0, 0, 0, 0),
-            stream: Vec::new(),
+            stream: VecDeque::with_capacity(zoom),
+            zoom,
         };
     }
 
     pub fn stream(&mut self, stream: Stream) {
-        self.stream = stream;
+        for sample in stream {
+            if self.stream.len() == self.stream.capacity() {
+                self.stream.pop_front();
+            }
+
+            self.stream.push_back(sample);
+        }
     }
 }
 
@@ -27,25 +38,27 @@ impl Element for Visualizer {
         let width = self.rect.width();
 
         let center= height as i32 / 2;
-        let step = self.stream.len() / width as usize;
+        let step = self.zoom as f32 / width as f32;
 
-        if self.stream.len() == 0 {
+        let mut last_x = self.rect.x;
+        let mut last_y = center;
+
+        for px in 1..width {
+            let sample = (px as f32 * step) as usize;
+            if sample >= self.stream.len() {
+                break
+            }
+
+            let x = self.rect.x + px as i32;
+            let y = center - (self.stream[sample] * 4.0 * (height as f32 / 2.0)) as i32;
+
             canvas.draw_line(
-                Point::new(self.rect.x + width as i32, center),
-                Point::new(self.rect.x, center)
+                Point::new(last_x, last_y),
+                Point::new(x, y)
             ).unwrap();
 
-            return;
-        }
-
-        for (x, i) in (0..self.stream.len()).step_by(step).enumerate() {
-            let y = (self.stream[i] * (height as f32 / 2.0)) as i32;
-            canvas
-                .draw_line(
-                    Point::new(x as i32, center - y),
-                    Point::new(x as i32, center + y),
-                )
-                .unwrap();
+            last_x = x;
+            last_y = y;
         }
     }
 

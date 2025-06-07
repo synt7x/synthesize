@@ -27,7 +27,7 @@ impl Synth {
         return Arc::new(Mutex::new(Self {
             note: 440.0,
             phase: 0.0,
-            volume: 0.005,
+            volume: 0.025,
             mode: Mode::Oscillator(Shape::Square),
             stream: Vec::new(),
         }));
@@ -53,9 +53,26 @@ impl Synth {
         }
     }
 
-    fn square(&self, note: f32, stream: &mut Stream) {}
+    fn square(&mut self, note: f32, stream: &mut Stream) {
+        for _ in 0..stream.capacity() {
+            stream.push(if self.phase <= 0.5 {
+                self.volume
+            } else {
+                -self.volume
+            });
 
-    fn saw(&self, note: f32, stream: &mut Stream) {}
+            stream.push(if self.phase <= 0.5 {
+                self.volume
+            } else {
+                -self.volume
+            });
+
+
+            self.phase = (self.phase + note / 44100.0) % 1.0;
+        }
+    }
+
+    fn saw(&mut self, note: f32, stream: &mut Stream) {}
 }
 
 impl AudioCallback<f32> for Synth {
