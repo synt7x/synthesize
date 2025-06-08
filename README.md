@@ -14,7 +14,7 @@ I was inspired to work on this project due to my fascination with audio synthesi
 
 Built with a custom rendering and audio engine, this project only depends on a single library, SDL3, and does everything from scratch (even font rendering!) I create my own bitmap font for rendering, as well as write a component tree system for rendering complex interactions with buttons, a waveform viewer, sliders, box sizing, and visual styling. I then integrated an `Educator` element that provides a tutorial for the user, guiding them through their experience in an effective and educational manner.
 
-## Challenges we ran into
+## Challenges I ran into
 
 Keeping the state and propagating events to elements is a major hurdle in a memory strict language such as Rust. Lots of behind the scene tricks had to occur to properly wrangle UI elements and get them rendering in an efficient manner. The borrow checker also made managing textures (specifically, regarding text rendering) extremely difficult, as they only live for the lifetime of the `TextureCreator`, meaning they must have their lifetimes explicitly extended in order to be passed to the elements they are rendered by.
 
