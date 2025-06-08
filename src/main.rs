@@ -31,7 +31,7 @@ fn main() {
 
     let mut app = App::new(creator, size.0, size.1, Player(synth.clone()));
 
-    app.set_panel_height(0.8);
+    app.set_panel_height(1.0);
     app.set_panel_width(1.0);
 
     let synth_note = synth.clone();
@@ -44,7 +44,7 @@ fn main() {
 
             {
                 let mut synth = synth_note.lock().unwrap();
-                synth.note = note * 4.0;
+                synth.note = note;
             }
 
             thread::sleep(Duration::from_secs_f32(

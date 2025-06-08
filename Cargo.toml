@@ -4,5 +4,4 @@ version = "1.0.0"
 edition = "2024"
 
 [dependencies]
-rand = "0.9.1"
 sdl3 = { version = "0.14.27", features = ["build-from-source-static"] }

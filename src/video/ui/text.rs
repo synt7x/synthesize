@@ -10,7 +10,7 @@ pub struct Text {
 
 impl Text {
     pub fn new(label: String, renderer: RenderReference) -> Self {
-        let texture = renderer.borrow_mut().texture(Self::width_of(&label), 21);
+        let texture = renderer.borrow_mut().texture(Self::width_of(&label), Self::height_of(&label));
         return Self {
             label,
             renderer,
@@ -36,17 +36,34 @@ impl Text {
 
     fn width_of(label: &String) -> u32 {
         let mut width: u32 = 0;
+        let mut max_width: u32 = 0;
         for (i, c) in label.chars().enumerate() {
             if c == 'i' || c == 'j' || c == 'l' {
                 width += 7
             } else if c == 'f' {
                 width += 10
+            } else if c == '\n' {
+                max_width = max_width.max(width);
+                width = 0;
             } else {
                 width += 11
             }
         }
 
-        return width;
+        max_width = max_width.max(width);
+        return max_width;
+    }
+
+    pub fn height_of(label: &String) -> u32 {
+        let mut height: u32 = 21;
+
+        for (i, c) in label.chars().enumerate() {
+            if c == '\n' {
+                height += 21;
+            }
+        }
+
+        return height;
     }
 
     pub fn pixels(&self) -> Vec<u8> {
@@ -54,13 +71,20 @@ impl Text {
         let height = self.rect.height() as usize;
         let mut buffer = vec![0u8; width * height * 4];
         let mut dx = 0;
+        let mut line = 0;
 
         // For now, render all characters as font[1]
         for (i, c) in self.label.chars().enumerate() {
             let glyph = font::get_glyph(c);
 
-            if c == 'i' || c == 'l' || c == 'j' {
+            if dx != 0 && (c == 'i' || c == 'l' || c == 'j') {
                 dx -= 2
+            }
+
+            if c == '\n' {
+                line += 1;
+                dx = 0;
+                continue;
             }
 
             for x in 0..10 {
@@ -71,7 +95,7 @@ impl Text {
                     let px = dx + x;
                     let py = if c == 'g' || c == 'p' || c == 'q' || c == 'y' {
                         y + 6
-                    } else if c == 'j' { y + 3 } else { y };
+                    } else if c == 'j' { y + 3 } else { y } + line * 21;
 
                     if px < width && py < height {
                         let offset = (py * width + px) * 4;
@@ -113,12 +137,12 @@ impl Element for Text {
 
     fn size(&mut self, width: u32, height: u32) {
         let text_width = self.width();
-        let ratio = height as f32 / 21.0;
+        let ratio = height as f32 / Self::height_of(&self.label) as f32;
         let scaled = (text_width as f32 * ratio) as u32;
 
         if scaled > width {
             let ratio = width as f32 / text_width as f32;
-            let scaled = (21.0 * ratio) as u32;
+            let scaled = (Self::height_of(&self.label) as f32 * ratio) as u32;
             self.rect.resize(width, scaled);
         } else {
             self.rect.resize(scaled, height);

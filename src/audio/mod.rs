@@ -1,6 +1,7 @@
 pub mod generator;
 pub mod synth;
 pub mod player;
+pub mod filter;
 
 pub mod prelude {
     pub use sdl3::audio::{
@@ -14,6 +15,7 @@ pub mod prelude {
         generator::*,
         synth::*,
         player::*,
+        filter::*,
     };
 
     pub type Stream = Vec<f32>;

@@ -13,7 +13,9 @@ impl App {
         let renderer: RenderReference = Renderer::new(creator);
         let mut root: Root = Root::new(width, height);
         let left_col: &mut Col = insert!(root, Col::new(0.5));
+        let left_col_ptr = Rc::new(left_col as *mut Col);
         let top_left: &mut Row = insert!(left_col, Row::new(0.9));
+        let top_left_ptr = Rc::new(top_left as *mut Row);
 
         let vis_padding: &mut Padding = insert!(top_left, Padding::new(16));
         let vis_border: &mut Border = insert!(vis_padding, Border::new(2));
@@ -95,9 +97,8 @@ impl App {
             }
         }
 
-
         let playback_row: &mut Row = insert!(panel_grid, Row::new(0.5));
-        let playback_btns: &mut Col = insert!(playback_row, Col::new(0.5));
+        let playback_btns: &mut Col = insert!(playback_row, Col::new(1.0));
         let playback_btns_grid: &mut Row = insert!(playback_btns, Row::new(1.0));
         let play_btn_padding: &mut Padding = insert!(playback_btns_grid, Padding::new(16));
         let play_btn: &mut Button = insert!(
@@ -123,10 +124,96 @@ impl App {
             synth.playing = false;
         }));
 
+        let playback_slider: &mut Col = insert!(playback_row, Col::new(1.0));
+        let slider_padding: &mut Padding = insert!(playback_slider, Padding::new(16));
+        let octave_slider: &mut Slider = insert!(slider_padding, Slider::new("Octave".to_owned(), 3.0, 0.1, 14.0, renderer.clone()));
+
+        let slider_synth = synth.0.clone();
+        octave_slider.on_change(Box::new(move |slider| {
+            let value = slider.value;
+            let mut synth = slider_synth.lock().unwrap();
+            synth.octave = value;
+        }));
 
         let right_col: &mut Col = insert!(root, Col::new(0.5));
-        let controls_padding: &mut Padding = insert!(right_col, Padding::new(16));
+        let top_right: &mut Row = insert!(right_col, Row::new(0.33));
+        let controls_padding: &mut Padding = insert!(top_right, Padding::new(16));
         let controls_border: &mut Border = insert!(controls_padding, Border::new(2));
+
+        let filter_btns: &mut Col = insert!(controls_border, Col::new(1.0));
+        let filter_btns_grid: &mut Row = insert!(filter_btns, Row::new(0.3));
+        let off_btn_padding: &mut Padding = insert!(filter_btns_grid, Padding::new(16));
+        let off_btn: &mut Button = insert!(
+            off_btn_padding,
+            Button::new("Bypass".to_owned(), renderer.clone())
+        );
+
+        let off_synth = synth.0.clone();
+        off_btn.on_click(Box::new(move |_| {
+            let mut synth = off_synth.lock().unwrap();
+            synth.filter.set_filter(Filtering::None);
+        }));
+
+        let high_pass_btn_padding: &mut Padding = insert!(filter_btns_grid, Padding::new(16));
+        let high_pass_btn: &mut Button = insert!(
+            high_pass_btn_padding,
+            Button::new("High Pass".to_owned(), renderer.clone())
+        );
+
+        let high_pass_synth = synth.0.clone();
+        high_pass_btn.on_click(Box::new(move |_| {
+            let mut synth = high_pass_synth.lock().unwrap();
+            synth.filter.set_filter(Filtering::HighPass);
+        }));
+
+        let low_pass_btn_padding: &mut Padding = insert!(filter_btns_grid, Padding::new(16));
+        let low_pass_btn: &mut Button = insert!(
+            low_pass_btn_padding,
+            Button::new("Low Pass".to_owned(), renderer.clone())
+        );
+
+        let low_pass_synth = synth.0.clone();
+        low_pass_btn.on_click(Box::new(move |_| {
+            let mut synth = low_pass_synth.lock().unwrap();
+            synth.filter.set_filter(Filtering::LowPass);
+        }));
+
+        let cutoff_grid: &mut Row = insert!(filter_btns, Row::new(0.7));
+        let cutoff_padding: &mut Padding = insert!(cutoff_grid, Padding::new(16));
+        let cutoff_slider: &mut Slider = insert!(cutoff_padding, Slider::new("Filter Cutoff".to_owned(), 0.5, 1.0, 0.0, renderer.clone()));
+        let cutoff_synth = synth.0.clone();
+        cutoff_slider.on_change(Box::new(move |slider| {
+            let value = slider.value;
+            let mut synth = cutoff_synth.lock().unwrap();
+            synth.alpha = value;
+        }));
+
+        let educator_ref: &mut Educator = insert!(root, Educator::new(renderer.clone()));
+        let educator_ptr = Rc::new(educator_ref as *mut Educator);
+
+        unsafe {
+            if let Some(educator) = educator_ptr.as_mut() {
+                let educator_clone = educator_ptr.clone();
+                educator.button.on_click(Box::new(move |_| {
+                    if let Some(educator) = educator_clone.as_mut() {
+                        educator.index += 1;
+                        educator.refresh();
+
+                        if educator.index >= MESSAGES.len() {
+                            return;
+                        }
+
+                        if MESSAGES[educator.index].1 == 1 {
+                            let top_left = top_left_ptr.as_mut().unwrap();
+                            top_left.adjust(0.8);
+                        } else if MESSAGES[educator.index].1 == 2 {
+                            let left_col: &mut Col = left_col_ptr.as_mut().unwrap();
+                            left_col.adjust(0.5);
+                        }
+                    }
+                }));
+            }
+        }
 
         return Self { renderer, root };
     }
@@ -153,6 +240,8 @@ impl App {
 
     pub fn update(&mut self, event: &Event) {
         self.root.update(event);
+        self.root
+            .size(self.root.rect.width(), self.root.rect.height());
     }
 
     pub fn render(&mut self, canvas: &mut WindowCanvas) {

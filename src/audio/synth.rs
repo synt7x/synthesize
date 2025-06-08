@@ -1,5 +1,4 @@
 use crate::audio::prelude::*;
-use rand::prelude::*;
 
 use std::{
     f32::consts::PI,
@@ -29,7 +28,6 @@ pub const NOTES: [(f32, f32); 43] = [
     (2.0, 58.27),
     (4.0, 65.41),
     (4.0, 51.91),
-
     (4.0, 87.31),
     (1.0, 65.41),
     (3.0, 69.30),
@@ -39,9 +37,8 @@ pub const NOTES: [(f32, f32); 43] = [
     (3.0, 51.91),
     (2.0, 69.30),
     (2.0, 58.27),
-    (4.0, 65.41 ),
+    (4.0, 65.41),
     (4.0, 51.91),
-
     (4.0, 43.65),
     (1.0, 65.41),
     (3.0, 51.91),
@@ -69,12 +66,15 @@ pub enum Mode {
 
 pub struct Synth {
     pub note: f32,
+    pub octave: f32,
     pub playing: bool,
     phase: f32,
     volume: f32,
 
+    pub alpha: f32,
     pub mode: Mode,
     pub stream: Stream,
+    pub filter: Filter,
 }
 
 impl Synth {
@@ -86,6 +86,9 @@ impl Synth {
             mode: Mode::Oscillator(Shape::Sawtooth),
             stream: Vec::new(),
             playing: true,
+            octave: 3.0,
+            alpha: 0.5,
+            filter: Filter::new(),
         }));
     }
 
@@ -164,39 +167,37 @@ impl Synth {
 
 impl AudioCallback<f32> for Synth {
     fn callback(&mut self, stream: &mut AudioStream, requested: i32) {
-        if !self.playing { self.note = 0.0; };
+        if !self.playing {
+            self.note = 0.0;
+        };
         let mut audio = Stream::with_capacity(requested as usize);
 
         match &self.mode {
             Mode::Oscillator(shape) => match shape {
-                Shape::Square => self.square(self.note, &mut audio),
-                Shape::Sawtooth => self.saw(self.note, &mut audio),
-                Shape::Sine => self.sine(self.note, &mut audio),
-                Shape::Triangle => self.triangle(self.note, &mut audio),
+                Shape::Square => self.square(self.note * self.octave, &mut audio),
+                Shape::Sawtooth => self.saw(self.note * self.octave, &mut audio),
+                Shape::Sine => self.sine(self.note * self.octave, &mut audio),
+                Shape::Triangle => self.triangle(self.note * self.octave, &mut audio),
             },
-            Mode::Multi(shape, voices, detune) => {
-                match shape {
-                    Shape::Sawtooth => {
-                        let mut streams: Vec<Vec<f32>> = Vec::new();
-                        let mut rng = rand::rng();
+            Mode::Multi(shape, voices, detune) => match shape {
+                Shape::Sawtooth => {
+                    let mut streams: Vec<Vec<f32>> = Vec::new();
 
-                        for i in 0..*voices {
-                            let tune = rng.random_range(-0.05..0.05) as f32;
-                            let mut stream = Vec::<f32>::with_capacity(audio.capacity());
-                            self.saw(self.note + tune, &mut stream);
+                    for i in 0..*voices {
+                        let tune = 0.0;
+                        let mut stream = Vec::<f32>::with_capacity(audio.capacity());
+                        self.saw(self.note + tune, &mut stream);
 
-                            streams.push(
-                                stream
-                            );
-
-                        }
-
-                        self.mix(&mut audio, streams);
+                        streams.push(stream);
                     }
-                    _ => {}
+
+                    self.mix(&mut audio, streams);
                 }
-            }
+                _ => {}
+            },
         }
+
+        self.filter.pass(&mut audio, self.alpha);
 
         stream
             .put_data_f32(&audio)

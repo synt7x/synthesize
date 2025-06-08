@@ -20,7 +20,10 @@ pub mod prelude {
         app::App,
         font,
         render::Renderer,
-        ui::{border::*, button::*, col::*, element::*, padding::*, root::*, row::*, text::*, visualizer::*},
+        ui::{
+            border::*, button::*, col::*, element::*, padding::*, root::*, row::*, slider::*,
+            text::*, visualizer::*, educator::*,
+        },
     };
 
     pub type RenderReference = Rc<RefCell<Renderer>>;
