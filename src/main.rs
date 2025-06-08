@@ -1,8 +1,8 @@
-use crate::video::prelude::*;
 use crate::audio::prelude::*;
+use crate::video::prelude::*;
 
-mod video;
 mod audio;
+mod video;
 
 fn main() {
     // Initialize SDL3
@@ -26,9 +26,9 @@ fn main() {
 
     // Holds rendering and updating logic for the UI
     let size: (u32, u32) = canvas.output_size().unwrap();
-    let mut app = App::new(creator, size.0, size.1);
     let mut synth = Synth::new();
     let generator = Generator::new(audio, Player(synth.clone()));
+    let mut app = App::new(creator, size.0, size.1, Player(synth.clone()));
 
     // Render loop
     loop {
@@ -43,8 +43,6 @@ fn main() {
         // Prepare canvas for rendering
         canvas.set_draw_color(Color::BLACK);
         canvas.clear();
-
-        app.stream(synth.lock().unwrap().get_stream());
 
         // Render the app component
         app.render(&mut canvas);

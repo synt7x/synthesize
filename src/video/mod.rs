@@ -19,7 +19,7 @@ pub mod prelude {
     pub use crate::video::{
         app::App,
         render::Renderer,
-        ui::{element::*, root::*, visualizer::*},
+        ui::{border::*, col::*, element::*, root::*, row::*, visualizer::*},
     };
 
     pub type RenderReference = Rc<RefCell<Renderer>>;
@@ -34,12 +34,10 @@ pub mod prelude {
     pub type GlyphMap = [u16; 10];
 
     macro_rules! insert {
-        ($parent: expr, $instance: expr) => {
-            {
-                let _idx = $parent.add(Box::new($instance));
-                $parent.get(_idx).unwrap()
-            }
-        }
+        ($parent: expr, $instance: expr) => {{
+            let _idx = $parent.add(Box::new($instance));
+            $parent.get(_idx).unwrap()
+        }};
     }
 
     pub(crate) use insert;

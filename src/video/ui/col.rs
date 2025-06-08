@@ -1,15 +1,17 @@
 use crate::video::prelude::*;
 
-pub struct Root {
+pub struct Col {
+    pub width: f32,
     pub children: Elements,
     pub rect: Rect,
 }
 
-impl Root {
-    pub fn new(width: u32, height: u32) -> Self {
+impl Col {
+    pub fn new(width: f32) -> Self {
         return Self {
+            width,
             children: Vec::new(),
-            rect: Rect::new(0, 0, width, height),
+            rect: Rect::new(0, 0, 0, 0),
         };
     }
 
@@ -32,33 +34,23 @@ impl Root {
     }
 }
 
-impl Element for Root {
-    fn size(&mut self, width: u32, height: u32) {
-        self.rect.resize(width, height);
-
-        for child in self.children.iter_mut() {
-            child.size(width, height);
-        }
-    }
-
+impl Element for Col {
     fn render(&mut self, canvas: &mut WindowCanvas) {
         for child in self.children.iter_mut() {
             child.render(canvas);
         }
     }
 
-    fn update(&mut self, event: &Event) {
-        for child in self.children.iter_mut() {
-            child.update(event);
-        }
+    fn size(&mut self, width: u32, height: u32) {
+        let width = (width as f32 * self.width) as u32;
+        self.rect.resize(width, height);
 
-        match event {
-            Event::Window { win_event, .. } => {
-                if let WindowEvent::Resized(width, height) = *win_event {
-                    self.size(width as u32, height as u32);
-                }
-            }
-            _ => {}
+        let mut dy = 0;
+
+        for child in self.children.iter_mut() {
+            child.size(width, height);
+            child.position(self.rect.x, self.rect.y + dy);
+            dy += child.rect().height() as i32;
         }
     }
 

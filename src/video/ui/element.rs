@@ -1,9 +1,9 @@
-use std::any::Any;
 use crate::video::prelude::*;
+use std::any::Any;
 
 pub trait Element: Any {
     fn update(&mut self, event: &Event) {}
-    fn render(&self, canvas: &mut WindowCanvas);
+    fn render(&mut self, canvas: &mut WindowCanvas);
     fn rect(&mut self) -> &mut Rect;
 
     fn size(&mut self, width: u32, height: u32) {
