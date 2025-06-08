@@ -1,12 +1,12 @@
 use crate::video::prelude::*;
 
-pub struct Border {
+pub struct Padding {
     pub weight: u32,
     pub children: Elements,
     pub rect: Rect,
 }
 
-impl Border {
+impl Padding {
     pub fn new(weight: u32) -> Self {
         return Self {
             weight,
@@ -27,6 +27,7 @@ impl Border {
 
         child.size(width - self.weight * 2, height - self.weight * 2);
         child.position(x + self.weight as i32, y + self.weight as i32);
+
         self.children.push(child);
         return self.children.len() - 1;
     }
@@ -41,25 +42,8 @@ impl Border {
     }
 }
 
-impl Element for Border {
+impl Element for Padding {
     fn render(&mut self, canvas: &mut WindowCanvas) {
-        let mut border = self.rect.clone();
-        let weight = self.weight;
-        let width = self.rect.width();
-        let height = self.rect.height();
-
-        border.resize(width - weight * 2, height - weight * 2);
-        border.reposition(Point::new(
-            border.x + weight as i32,
-            border.y + weight as i32,
-        ));
-
-        canvas.set_draw_color(Color::WHITE);
-        canvas.fill_rect(self.rect).unwrap();
-
-        canvas.set_draw_color(Color::BLACK);
-        canvas.fill_rect(border).unwrap();
-
         for child in self.children.iter_mut() {
             child.render(canvas);
         }

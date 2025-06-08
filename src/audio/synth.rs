@@ -1,5 +1,8 @@
 use crate::audio::prelude::*;
-use std::sync::{Arc, Mutex};
+use std::{
+    f32::consts::PI,
+    sync::{Arc, Mutex},
+};
 
 pub enum Shape {
     Square,
@@ -28,7 +31,7 @@ impl Synth {
             note: 440.0,
             phase: 0.0,
             volume: 0.025,
-            mode: Mode::Oscillator(Shape::Square),
+            mode: Mode::Oscillator(Shape::Sine),
             stream: Vec::new(),
         }));
     }
@@ -67,12 +70,39 @@ impl Synth {
                 -self.volume
             });
 
+            self.phase = (self.phase + note / 44100.0) % 1.0;
+        }
+    }
+
+    fn saw(&mut self, note: f32, stream: &mut Stream) {
+        for _ in 0..stream.capacity() {
+            let sample = (0.5 - self.phase) * self.volume;
+            stream.push(sample);
+            stream.push(sample);
 
             self.phase = (self.phase + note / 44100.0) % 1.0;
         }
     }
 
-    fn saw(&mut self, note: f32, stream: &mut Stream) {}
+    fn triangle(&mut self, note: f32, stream: &mut Stream) {
+        for _ in 0..stream.capacity() {
+            let sample = ((0.5 - self.phase).abs() * 2.0 - 0.5) * self.volume * 2.0;
+            stream.push(sample);
+            stream.push(sample);
+
+            self.phase = (self.phase + note / 44100.0) % 1.0;
+        }
+    }
+
+    fn sine(&mut self, note: f32, stream: &mut Stream) {
+        for _ in 0..stream.capacity() {
+            let sample = (PI * 2.0 * self.phase).sin() * self.volume;
+            stream.push(sample);
+            stream.push(sample);
+
+            self.phase = (self.phase + note / 44100.0) % 1.0;
+        }
+    }
 }
 
 impl AudioCallback<f32> for Synth {
@@ -83,8 +113,8 @@ impl AudioCallback<f32> for Synth {
             Mode::Oscillator(shape) => match shape {
                 Shape::Square => self.square(self.note, &mut audio),
                 Shape::Sawtooth => self.saw(self.note, &mut audio),
-                Shape::Sine => self.square(self.note, &mut audio),
-                Shape::Triangle => self.square(self.note, &mut audio),
+                Shape::Sine => self.sine(self.note, &mut audio),
+                Shape::Triangle => self.triangle(self.note, &mut audio),
             },
             Mode::Multi(shape, voices, detune) => {}
         }

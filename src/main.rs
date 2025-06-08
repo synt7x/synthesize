@@ -1,3 +1,6 @@
+use std::thread;
+use std::time::Duration;
+
 use crate::audio::prelude::*;
 use crate::video::prelude::*;
 
@@ -21,10 +24,8 @@ fn main() {
     // Rendering + Events
     let mut canvas = window.into_canvas();
     let mut pump = context.event_pump().unwrap();
-
     let creator = canvas.texture_creator();
 
-    // Holds rendering and updating logic for the UI
     let size: (u32, u32) = canvas.output_size().unwrap();
     let mut synth = Synth::new();
     let generator = Generator::new(audio, Player(synth.clone()));

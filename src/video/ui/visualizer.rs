@@ -14,7 +14,7 @@ pub struct Visualizer {
 
 impl Visualizer {
     pub fn new(synth: Arc<Mutex<Synth>>) -> Self {
-        let zoom = 2000;
+        let zoom = 1000;
         return Self {
             rect: Rect::new(0, 0, 0, 0),
             stream: VecDeque::with_capacity(zoom),
@@ -34,16 +34,16 @@ impl Element for Visualizer {
             self.stream.push_back(sample);
         }
 
-        canvas.set_draw_color(Color::WHITE);
-
         let height = self.rect.height();
         let width = self.rect.width();
 
-        let center = height as i32 / 2;
+        let center = height as i32 / 2 + self.rect.y;
         let step = self.zoom as f32 / width as f32;
 
         let mut last_x = self.rect.x;
         let mut last_y = center;
+
+        canvas.set_draw_color(Color::WHITE);
 
         for px in 1..width {
             let sample = (px as f32 * step) as usize;
@@ -52,7 +52,7 @@ impl Element for Visualizer {
             }
 
             let x = self.rect.x + px as i32;
-            let y = center - (self.stream[sample] * 4.0 * (height as f32 / 2.0)) as i32;
+            let y = center - (self.stream[sample] * 6.0 * (height as f32 / 2.0)) as i32;
 
             for dx in -1..1 {
                 for dy in -1..1 {
