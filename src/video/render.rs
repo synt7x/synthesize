@@ -25,6 +25,7 @@ impl Renderer {
         let mut texture = unsafe { transmute::<Texture<'_>, RenderTexture>(texture.unwrap()) };
 
         texture.set_blend_mode(BlendMode::Blend);
+        texture.set_scale_mode(sdl3::render::ScaleMode::Nearest);
         self.textures.insert(self.id, texture);
 
         return self.id;

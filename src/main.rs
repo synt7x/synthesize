@@ -17,7 +17,6 @@ fn main() {
     let window = video
         .window("Synthesize", 1200, 900)
         .position_centered()
-        .resizable()
         .build()
         .unwrap();
 
@@ -32,8 +31,29 @@ fn main() {
 
     let mut app = App::new(creator, size.0, size.1, Player(synth.clone()));
 
-    app.set_panel_height(0.5);
-    app.set_panel_width(0.5);
+    app.set_panel_height(0.8);
+    app.set_panel_width(1.0);
+
+    let synth_note = synth.clone();
+    thread::spawn(move || {
+        let mut index = 0;
+
+        loop {
+            let note = NOTES[index].1;
+            let duration = NOTES[index].0;
+
+            {
+                let mut synth = synth_note.lock().unwrap();
+                synth.note = note * 4.0;
+            }
+
+            thread::sleep(Duration::from_secs_f32(
+                0.5 * duration / 8.0
+            ));
+
+            index = (index + 1) % NOTES.len();
+        }
+    });
 
     // Render loop
     loop {

@@ -60,9 +60,10 @@ impl Element for Row {
         self.rect.resize(width, height);
 
         let mut dx = 0;
+        let length = self.children.len();
 
         for child in self.children.iter_mut() {
-            child.size(width, height);
+            child.size((width as f32 / length as f32) as u32, height);
             child.position(self.rect.x + dx, self.rect.y);
             dx += child.rect().width() as i32;
         }

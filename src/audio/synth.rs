@@ -1,9 +1,60 @@
 use crate::audio::prelude::*;
+use rand::prelude::*;
+
 use std::{
     f32::consts::PI,
     sync::{Arc, Mutex},
 };
 
+pub const NOTES: [(f32, f32); 43] = [
+    (4.0, 43.65),
+    (1.0, 65.41),
+    (3.0, 69.30),
+    (4.0, 65.41),
+    (4.0, 51.91),
+    (1.0, 43.65),
+    (3.0, 38.89),
+    (2.0, 69.30),
+    (2.0, 58.27),
+    (4.0, 65.41),
+    (4.0, 51.91),
+    (4.0, 43.65),
+    (1.0, 65.41),
+    (3.0, 69.30),
+    (4.0, 65.41),
+    (4.0, 51.91),
+    (1.0, 43.65),
+    (3.0, 38.89),
+    (2.0, 69.30),
+    (2.0, 58.27),
+    (4.0, 65.41),
+    (4.0, 51.91),
+
+    (4.0, 87.31),
+    (1.0, 65.41),
+    (3.0, 69.30),
+    (4.0, 65.41),
+    (4.0, 51.91),
+    (1.0, 43.65),
+    (3.0, 51.91),
+    (2.0, 69.30),
+    (2.0, 58.27),
+    (4.0, 65.41 ),
+    (4.0, 51.91),
+
+    (4.0, 43.65),
+    (1.0, 65.41),
+    (3.0, 51.91),
+    (4.0, 69.30),
+    (4.0, 58.27),
+    (1.0, 43.65),
+    (3.0, 51.91),
+    (4.0, 69.30),
+    (4.0, 65.41),
+    (4.0, 43.65),
+];
+
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Shape {
     Square,
     Sawtooth,
@@ -17,22 +68,24 @@ pub enum Mode {
 }
 
 pub struct Synth {
-    note: f32,
+    pub note: f32,
+    pub playing: bool,
     phase: f32,
     volume: f32,
 
-    mode: Mode,
+    pub mode: Mode,
     pub stream: Stream,
 }
 
 impl Synth {
     pub fn new() -> Arc<Mutex<Self>> {
         return Arc::new(Mutex::new(Self {
-            note: 440.0,
+            note: NOTES[6].1,
             phase: 0.0,
             volume: 0.025,
-            mode: Mode::Oscillator(Shape::Sine),
+            mode: Mode::Oscillator(Shape::Sawtooth),
             stream: Vec::new(),
+            playing: true,
         }));
     }
 
@@ -40,14 +93,18 @@ impl Synth {
         return self.stream.clone();
     }
 
-    fn mix(stream: &mut Stream, streams: Vec<Stream>) {
+    fn mix(&self, stream: &mut Stream, streams: Vec<Stream>) {
         let length = streams.iter().map(|stream| stream.len()).min().unwrap_or(0);
 
-        let mix_amount = streams.len() as f32;
+        let mix_amount = streams.len() as f32 / 2.0;
 
         for child in streams {
             for i in 0..length {
-                stream[i] += child[i]
+                if i >= stream.len() {
+                    stream.push(child[i]);
+                } else {
+                    stream[i] += child[i];
+                }
             }
         }
 
@@ -76,7 +133,7 @@ impl Synth {
 
     fn saw(&mut self, note: f32, stream: &mut Stream) {
         for _ in 0..stream.capacity() {
-            let sample = (0.5 - self.phase) * self.volume;
+            let sample = (0.5 - self.phase) * self.volume * 2.0;
             stream.push(sample);
             stream.push(sample);
 
@@ -107,6 +164,7 @@ impl Synth {
 
 impl AudioCallback<f32> for Synth {
     fn callback(&mut self, stream: &mut AudioStream, requested: i32) {
+        if !self.playing { self.note = 0.0; };
         let mut audio = Stream::with_capacity(requested as usize);
 
         match &self.mode {
@@ -116,7 +174,28 @@ impl AudioCallback<f32> for Synth {
                 Shape::Sine => self.sine(self.note, &mut audio),
                 Shape::Triangle => self.triangle(self.note, &mut audio),
             },
-            Mode::Multi(shape, voices, detune) => {}
+            Mode::Multi(shape, voices, detune) => {
+                match shape {
+                    Shape::Sawtooth => {
+                        let mut streams: Vec<Vec<f32>> = Vec::new();
+                        let mut rng = rand::rng();
+
+                        for i in 0..*voices {
+                            let tune = rng.random_range(-0.05..0.05) as f32;
+                            let mut stream = Vec::<f32>::with_capacity(audio.capacity());
+                            self.saw(self.note + tune, &mut stream);
+
+                            streams.push(
+                                stream
+                            );
+
+                        }
+
+                        self.mix(&mut audio, streams);
+                    }
+                    _ => {}
+                }
+            }
         }
 
         stream

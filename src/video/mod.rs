@@ -18,8 +18,9 @@ pub mod prelude {
 
     pub use crate::video::{
         app::App,
+        font,
         render::Renderer,
-        ui::{border::*, col::*, element::*, padding::*, root::*, row::*, visualizer::*},
+        ui::{border::*, button::*, col::*, element::*, padding::*, root::*, row::*, text::*, visualizer::*},
     };
 
     pub type RenderReference = Rc<RefCell<Renderer>>;
@@ -30,6 +31,7 @@ pub mod prelude {
     pub type WindowCanvas = Canvas<Window>;
     pub type Elements = Vec<Box<dyn Element>>;
     pub type Dynamic = dyn Any;
+    pub type Callback<T> = Box<dyn FnMut(&mut T)>;
 
     pub type GlyphMap = [u16; 10];
 
