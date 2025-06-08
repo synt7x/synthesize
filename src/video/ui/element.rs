@@ -2,7 +2,7 @@ use crate::video::prelude::*;
 use std::any::Any;
 
 pub trait Element: Any {
-    fn update(&mut self, event: &Event) {}
+    fn update(&mut self, _: &Event) {}
     fn render(&mut self, canvas: &mut WindowCanvas);
     fn rect(&mut self) -> &mut Rect;
 
@@ -14,6 +14,6 @@ pub trait Element: Any {
         self.rect().reposition(Point::new(x, y));
     }
 
-    fn color(&mut self, color: Color) {}
+    fn color(&mut self, _: Color) {}
     fn dynamic(&mut self) -> &mut Dynamic;
 }

@@ -15,12 +15,12 @@ impl Row {
         };
     }
 
-    pub fn add(&mut self, mut child: Box<dyn Element>) -> usize {
+    pub fn add(&mut self, child: Box<dyn Element>) -> usize {
         let width = self.rect.width();
         let height = self.rect.height();
 
-        child.size(width, height);
         self.children.push(child);
+        self.size(width, (height as f32 / self.height) as u32);
         return self.children.len() - 1;
     }
 
@@ -32,12 +32,26 @@ impl Row {
             .dynamic()
             .downcast_mut::<T>();
     }
+
+    pub fn adjust(&mut self, height: f32) {
+        let previous_height = self.rect.height();
+        let previous_percentage = self.height;
+        self.height = height;
+
+        self.size(self.rect.width(), (previous_height as f32 / previous_percentage) as u32);
+    }
 }
 
 impl Element for Row {
     fn render(&mut self, canvas: &mut WindowCanvas) {
         for child in self.children.iter_mut() {
             child.render(canvas);
+        }
+    }
+
+    fn update(&mut self, event: &Event) {
+        for child in self.children.iter_mut() {
+            child.update(event);
         }
     }
 
@@ -49,6 +63,15 @@ impl Element for Row {
 
         for child in self.children.iter_mut() {
             child.size(width, height);
+            child.position(self.rect.x + dx, self.rect.y);
+            dx += child.rect().width() as i32;
+        }
+    }
+
+    fn position(&mut self, x: i32, y: i32) {
+        self.rect.reposition(Point::new(x, y));
+        let mut dx = 0;
+        for child in self.children.iter_mut() {
             child.position(self.rect.x + dx, self.rect.y);
             dx += child.rect().width() as i32;
         }

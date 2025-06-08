@@ -19,9 +19,6 @@ impl Padding {
         let width = self.rect.width();
         let height = self.rect.height();
 
-        let width = self.rect.width();
-        let height = self.rect.height();
-
         let x = self.rect.x;
         let y = self.rect.y;
 
@@ -49,6 +46,12 @@ impl Element for Padding {
         }
     }
 
+    fn update(&mut self, event: &Event) {
+        for child in self.children.iter_mut() {
+            child.update(event);
+        }
+    }
+
     fn size(&mut self, width: u32, height: u32) {
         self.rect.resize(width, height);
 
@@ -60,6 +63,16 @@ impl Element for Padding {
             let y = self.rect.y;
 
             child.size(width - self.weight * 2, height - self.weight * 2);
+            child.position(x + self.weight as i32, y + self.weight as i32);
+        }
+    }
+
+    fn position(&mut self, x: i32, y: i32) {
+        self.rect.reposition(Point::new(x, y));
+        for child in self.children.iter_mut() {
+            let x = self.rect.x;
+            let y = self.rect.y;
+
             child.position(x + self.weight as i32, y + self.weight as i32);
         }
     }

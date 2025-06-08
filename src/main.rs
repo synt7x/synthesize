@@ -27,9 +27,13 @@ fn main() {
     let creator = canvas.texture_creator();
 
     let size: (u32, u32) = canvas.output_size().unwrap();
-    let mut synth = Synth::new();
-    let generator = Generator::new(audio, Player(synth.clone()));
+    let synth = Synth::new();
+    let _generator = Generator::new(audio, Player(synth.clone()));
+
     let mut app = App::new(creator, size.0, size.1, Player(synth.clone()));
+
+    app.set_panel_height(0.5);
+    app.set_panel_width(0.5);
 
     // Render loop
     loop {
