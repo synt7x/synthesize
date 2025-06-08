@@ -2,6 +2,10 @@
 
 Learn audio synthesis interactively with a simple introductory crash course. Teaches the basics of oscillators and filters through interactive learning.
 
+## Building
+
+You must have Rust and CMake installed to build this project. Once those prequisites are installed, simply run `cargo build --release` to create a build of the executable.
+
 ## Inspiration
 
 I was inspired to work on this project due to my fascination with audio synthesis, and wanted to try doing audio synthesis at a low level myself. This was my first time writing a proper audio engine, and I hoped to gain new insight into the inner workings of audio formats and pipelines. I also hoped to learn the ropes of the `sdl3` Rust API by writing a custom rendering engine. Through this project, I hope that I can spread my passion of synthesizers to an audience that may be interested but daunted by the complexity.
